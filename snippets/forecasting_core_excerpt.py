@@ -1,6 +1,8 @@
 """
-Illustrative excerpt (~60 lines) — planning month + demand lags + RF predict.
-Not the full model_manager / SI-MI wrappers. Synthetic-demo friendly.
+Short excerpt of one planning month: lags, one forest, a short horizon.
+
+The full stepwise loop — SI and MI, a validation window separate from the
+holdout, and the optional backward prune — is ``ticket_volume_rf``.
 """
 
 from __future__ import annotations
