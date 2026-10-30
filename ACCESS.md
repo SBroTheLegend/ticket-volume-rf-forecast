@@ -1,25 +1,25 @@
-# Request full cleaned source
+# Contact
 
-The complete sanitized SI and MI Python modules are **not** published in this
-repository. They are available for recruiter / hiring-manager review on request.
+The stepwise SI / MI planning loop lives in this repository under
+[`ticket_volume_rf/`](ticket_volume_rf/). It runs on synthetic panels only.
+See the [README](README.md) for how selection and the reported accuracy use
+different months.
 
-## Contact
+## Author
 
 - Email: [smartagent88@gmail.com](mailto:smartagent88@gmail.com)
 - GitHub: [SBroTheLegend](https://github.com/SBroTheLegend)
 
-## Suggested email
+Questions about the methodology are welcome. The note below is a reasonable
+shape for that email.
 
-**Subject:** Request: ticket-volume-rf-forecast full source
-
-**Body:**
+**Subject:** ticket-volume-rf-forecast
 
 ```text
 Hi Sourav,
 
-I reviewed https://github.com/SBroTheLegend/ticket-volume-rf-forecast and
-would like the full sanitized Single-Iteration and Multiple-Iteration
-modules for recruiter / hiring-manager review.
+I reviewed https://github.com/SBroTheLegend/ticket-volume-rf-forecast
+(the ticket_volume_rf planning loop, SI vs MI, and the validation / holdout split).
 
 Name:
 Company:
@@ -28,14 +28,7 @@ Role / requisition (optional):
 Thanks!
 ```
 
-## One-click mailto
+[Open a pre-filled email](mailto:smartagent88@gmail.com?subject=ticket-volume-rf-forecast&body=Hi%20Sourav%2C%0A%0AI%20reviewed%20https%3A%2F%2Fgithub.com%2FSBroTheLegend%2Fticket-volume-rf-forecast%20%28the%20ticket_volume_rf%20planning%20loop%2C%20SI%20vs%20MI%2C%20and%20the%20validation%20%2F%20holdout%20split%29.%0A%0AName%3A%0ACompany%3A%0ARole%3A%0A%0AThanks%21)
 
-[Click to open a pre-filled email](mailto:smartagent88@gmail.com?subject=Request%3A%20ticket-volume-rf-forecast%20full%20source&body=Hi%20Sourav%2C%0A%0AI%20reviewed%20https%3A%2F%2Fgithub.com%2FSBroTheLegend%2Fticket-volume-rf-forecast%20and%20would%20like%20the%20full%20sanitized%20SI%2FMI%20modules%20for%20recruiter%20%2F%20hiring-manager%20review.%0A%0AName%3A%0ACompany%3A%0ARole%3A%0A%0AThanks%21)
-
-## What you will receive
-
-- `rf_single_iteration.py` — SI planning loop + stepwise feature selection
-- `rf_multiple_iteration.py` — MI variant (refit each target month)
-- Brief sanitization notes (what was stripped / renamed)
-
-No proprietary datasets or notebook execution outputs are included.
+No proprietary datasets are included. `examples/sample_series.csv` and
+`make_synthetic_panel` are synthetic.

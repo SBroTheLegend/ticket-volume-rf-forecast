@@ -1,60 +1,60 @@
 #!/usr/bin/env python3
-"""
-Short synthetic demo — simplified API, not the full SI/MI model_manager.
+"""Run SI and MI stepwise selection on a synthetic multi-region panel.
 
-Demonstrates: lag features + RandomForestRegressor on a tiny multi-region panel.
+The sample CSV in this folder is a schema sketch (15 months). The validation
+window plus the holdout need a longer history, so this demo builds one with
+``make_synthetic_panel``. Nothing here is a real ticket series.
 """
 
 from __future__ import annotations
 
+import logging
+import sys
 from pathlib import Path
 
-import numpy as np
-import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-HERE = Path(__file__).resolve().parent
-DATA = HERE / "sample_series.csv"
+from ticket_volume_rf import make_synthetic_panel, run_pipeline
 
 
-def add_lags(df: pd.DataFrame, max_lag: int = 3) -> pd.DataFrame:
-    out = df.sort_values(["series_id", "year_month"]).copy()
-    for lag in range(1, max_lag + 1):
-        out[f"demand_lag_{lag}"] = out.groupby("series_id")["ticket_volume"].shift(lag)
-    return out.fillna(0)
-
-
-def demo_holdout(df: pd.DataFrame, holdout_from: int = 202101) -> None:
-    df = add_lags(df)
-    feature_cols = [c for c in df.columns if c.startswith("demand_lag_")]
-    rows = []
-    for sid, g in df.groupby("series_id"):
-        train = g[g["year_month"] < holdout_from]
-        test = g[g["year_month"] >= holdout_from]
-        if train.empty or test.empty:
-            continue
-        model = RandomForestRegressor(n_estimators=50, random_state=2)
-        model.fit(train[feature_cols], train["ticket_volume"])
-        pred = np.clip(model.predict(test[feature_cols]), 0, None)
-        mae = mean_absolute_error(test["ticket_volume"], pred)
-        rows.append(
-            {
-                "series_id": sid,
-                "region": g["region"].iloc[0],
-                "holdout_n": len(test),
-                "mae": round(float(mae), 2),
-                "actual_mean": round(float(test["ticket_volume"].mean()), 1),
-                "pred_mean": round(float(pred.mean()), 1),
-            }
+def main() -> None:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+    panel = make_synthetic_panel(n_months=30, seed=7)
+    windows = dict(
+        selection_start_month=201906,
+        selection_end_month=202001,
+        holdout_start_month=202001,
+        holdout_end_month=202006,
+        candidates=["demand_lag_2", "moving_avg_3", "sin365", "recent_change", "Jan_flag"],
+        backward_prune=True,
+        offset=4,
+        score_offset=3,
+        random_state=2,
+        n_jobs=-1,
+        demand_lag=6,
+    )
+    print("Synthetic panel rows:", len(panel), "regions:", sorted(panel["region"].unique()))
+    print(
+        "Selection planning months are inside (201906, 202001); "
+        "holdout planning months are inside (202001, 202006)."
+    )
+    for mode, trees in (("SI", 20), ("MI", 12)):
+        result = run_pipeline(
+            panel,
+            mode=mode,
+            n_estimators=trees,
+            output_root=ROOT / "outputs" / "demo" / mode,
+            **windows,
         )
-    summary = pd.DataFrame(rows)
-    print("=== Synthetic ticket-volume RF demo (simplified) ===")
-    print(summary.to_string(index=False))
-    print("\nNote: full stepwise SI/MI feature-selection modules are private;")
-    print("see ../ACCESS.md to request the sanitized full source.")
+        print(f"\n=== {mode} (refit_each_month={result.refit_each_month}) ===")
+        print(result.summary().to_string(index=False))
+        top = result.series[0].feature_importances.head(5)
+        print(f"Top holdout importances, {result.series[0].region}:")
+        print(top.to_string(index=False))
+    print("\nWrote selection traces, predictions, and importances under outputs/demo/.")
 
 
 if __name__ == "__main__":
-    panel = pd.read_csv(DATA)
-    demo_holdout(panel)
+    main()
